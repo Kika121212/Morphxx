@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pose-estimation-webapp
+    name: pose-estimation-webapp-v2
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
