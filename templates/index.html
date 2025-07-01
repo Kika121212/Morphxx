@@ -1,13 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pose Estimation WebApp</title>
+    <title>Pose Estimation with Webcam</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h2>Pose Estimation with Webcam</h2>
-    <div class="video-container">
-        <img src="{{ url_for('video') }}" width="720" height="540">
-    </div>
+    <h2>Pose Estimation with Webcam (Live)</h2>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <img id="processedImage" width="640" height="480"/>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const processedImage = document.getElementById('processedImage');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            });
+
+        setInterval(() => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let dataURL = canvas.toDataURL('image/jpeg');
+            fetch('/process', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ image: dataURL })
+            })
+            .then(res => res.json())
+            .then(data => {
+                processedImage.src = 'data:image/jpeg;base64,' + data.image;
+            });
+        }, 300);
+    </script>
 </body>
 </html>
