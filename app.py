@@ -1,6 +1,8 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, request, jsonify
 import cv2
+import numpy as np
 import mediapipe as mp
+import base64
 
 app = Flask(__name__)
 
@@ -8,33 +10,26 @@ mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
-camera = cv2.VideoCapture(0)
-
-def gen_frames():
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            result = pose.process(image_rgb)
-
-            if result.pose_landmarks:
-                mp_drawing.draw_landmarks(frame, result.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+def process_frame(image_np):
+    image_rgb = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+    results = pose.process(image_rgb)
+    if results.pose_landmarks:
+        mp_drawing.draw_landmarks(image_np, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    _, buffer = cv2.imencode('.jpg', image_np)
+    return base64.b64encode(buffer).decode('utf-8')
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/video')
-def video():
-    return Response(gen_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/process', methods=['POST'])
+def process():
+    data = request.json['image']
+    image_data = base64.b64decode(data.split(',')[1])
+    np_arr = np.frombuffer(image_data, np.uint8)
+    frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    processed_image = process_frame(frame)
+    return jsonify({'image': processed_image})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
