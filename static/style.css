@@ -1,12 +1,21 @@
 body {
-    text-align: center;
-    background-color: #f4f4f4;
     font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    text-align: center;
 }
-h2 {
+
+video, canvas {
+    width: 640px;
+    height: 480px;
+    border: 1px solid black;
     margin-top: 20px;
 }
-img, video {
-    margin-top: 20px;
-    border: 2px solid #333;
+
+.infobox {
+    width: 640px;
+    margin: 20px auto;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
 }
