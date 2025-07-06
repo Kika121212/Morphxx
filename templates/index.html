@@ -1,38 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pose Estimation with Webcam</title>
+    <title>Fitness Pose Estimator</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h2>Pose Estimation with Webcam (Live)</h2>
-    <video id="video" width="640" height="480" autoplay></video>
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-    <img id="processedImage" width="640" height="480"/>
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const processedImage = document.getElementById('processedImage');
+    <h1>Fitness Pose Estimation</h1>
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            });
+    <div class="infobox">
+        <p><strong>Phase:</strong> <span id="phase">N/A</span></p>
+        <p><strong>Reps:</strong> <span id="reps">0</span></p>
+        <p><strong>Angle:</strong> <span id="angle">0</span>°</p>
+    </div>
 
-        setInterval(() => {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let dataURL = canvas.toDataURL('image/jpeg');
-            fetch('/process', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ image: dataURL })
-            })
-            .then(res => res.json())
-            .then(data => {
-                processedImage.src = 'data:image/jpeg;base64,' + data.image;
-            });
-        }, 300);
-    </script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
