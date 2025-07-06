@@ -77,5 +77,5 @@ def process_frame():
         'phase': phase
     })
 
-if __name__ == '__main__':
+if __name__ == '__main_':
     app.run(debug=True)
